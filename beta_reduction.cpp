@@ -383,5 +383,5 @@ string beta_reduction(string input) {
     
     string ret = vec2str(reducted_formula);
     
-    return "";
+    return ret;
 }

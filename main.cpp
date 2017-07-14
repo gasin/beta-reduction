@@ -16,6 +16,6 @@ int main() {
         }
         
         string output = beta_reduction(input);
-        cout << output << endl;
+        //cout << output << endl;
     }
 }
