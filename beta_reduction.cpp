@@ -8,6 +8,7 @@ using namespace std;
 struct CELL {
     int n;
     string str;
+    int dup;
 };
 
 string add_bracket(string str) {
@@ -64,8 +65,10 @@ vector<string> str2vec(string str) {
 vector<CELL> de_bruijn(vector<string> vec) {
     
     const int undefined = -100;
-    vector<CELL> ret((int)vec.size(), (CELL){undefined, ""});
+    vector<CELL> ret((int)vec.size(), (CELL){undefined, "", 0});
     // lambda..-1, left_bracket..-2, right_bracket..-3
+    // 
+    map<string, int> str_counter;
     
     for(int i = 0; i < (int)vec.size(); i++) {
         if(ret[i].n != undefined) {
@@ -73,15 +76,15 @@ vector<CELL> de_bruijn(vector<string> vec) {
         }
         string str = vec[i];
         if(str == "(") {
-            ret[i] = (CELL){-2, str};
+            ret[i] = (CELL){-2, str, 0};
             continue;
         }
         if(str == ")") {
-            ret[i] = (CELL){-3, str};
+            ret[i] = (CELL){-3, str, 0};
             continue;
         }
         if(str[0] == '\\') {
-            ret[i] = (CELL){-1, str};
+            ret[i] = (CELL){-1, str, str_counter[str.substr(1)]++};
             int cnt = 0;
             int dead = -1;
             stack<bool> blacket_type;
@@ -109,7 +112,7 @@ vector<CELL> de_bruijn(vector<string> vec) {
                     continue;
                 }
                 if(dead == -1 && s == str.substr(1)) {
-                    ret[j] = (CELL){cnt, s};
+                    ret[j] = (CELL){cnt, s, ret[i].dup};
                     continue;
                 }
                 if(s == str) {
@@ -143,7 +146,7 @@ vector<CELL> de_bruijn(vector<string> vec) {
                 blacket_type.pop();
             }
             if(ret[i].n == undefined) {
-                ret[i] = (CELL){name[vec[i]]+cnt, vec[i]};
+                ret[i] = (CELL){name[vec[i]]+cnt, vec[i], str_counter[vec[i]]};
             }
         }
     }
@@ -217,11 +220,11 @@ vector<CELL> reduct(vector<CELL> pre) {
                 } else if(pre[j].n < cnt) {
                     nxt.push_back(pre[j]);
                 } else if(pre[j].n > cnt) {
-                    nxt.push_back((CELL){pre[j].n-1, pre[j].str});
+                    nxt.push_back((CELL){pre[j].n-1, pre[j].str, pre[j].dup});
                 } else {
                     for(int k = 0; k < (int)item.size(); k++) {
                         if(item[k].n >= 0) {
-                            nxt.push_back((CELL){item[k].n+cnt, item[k].str});
+                            nxt.push_back((CELL){item[k].n+cnt, item[k].str, item[k].dup});
                         } else {
                             nxt.push_back(item[k]);
                         }
@@ -264,6 +267,9 @@ string vec2str(vector<CELL> vec) {
     
     for(int i = 0; i < (int)vec.size(); i++) {
         ret += vec[i].str;
+        for(int j = 0; j < vec[i].dup; j++) {
+            ret += "'";
+        }
         if(vec[i].str != "(" && i != (int)vec.size()-1 && vec[i+1].str != ")") {
             ret += " ";
         }
