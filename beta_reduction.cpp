@@ -5,6 +5,11 @@
 #include <stack>
 using namespace std;
 
+struct CELL {
+    int n;
+    string str;
+};
+
 string add_bracket(string str) {
     while(true) {
         string nxt = "";
@@ -56,27 +61,27 @@ vector<string> str2vec(string str) {
     return ret;
 }
 
-vector<int> de_bruijn(vector<string> vec) {
+vector<CELL> de_bruijn(vector<string> vec) {
     
     const int undefined = -100;
-    vector<int> ret((int)vec.size(), undefined);
+    vector<CELL> ret((int)vec.size(), (CELL){undefined, ""});
     // lambda..-1, left_bracket..-2, right_bracket..-3
     
     for(int i = 0; i < (int)vec.size(); i++) {
-        if(ret[i] != undefined) {
+        if(ret[i].n != undefined) {
             continue;
         }
         string str = vec[i];
         if(str == "(") {
-            ret[i] = -2;
+            ret[i] = (CELL){-2, str};
             continue;
         }
         if(str == ")") {
-            ret[i] = -3;
+            ret[i] = (CELL){-3, str};
             continue;
         }
         if(str[0] == '\\') {
-            ret[i] = -1;
+            ret[i] = (CELL){-1, str};
             int cnt = 0;
             int dead = -1;
             stack<bool> blacket_type;
@@ -104,7 +109,7 @@ vector<int> de_bruijn(vector<string> vec) {
                     continue;
                 }
                 if(dead == -1 && s == str.substr(1)) {
-                    ret[j] = cnt;
+                    ret[j] = (CELL){cnt, s};
                     continue;
                 }
                 if(s == str) {
@@ -115,7 +120,7 @@ vector<int> de_bruijn(vector<string> vec) {
     }
     map<string, int> name;
     for(int i = (int)vec.size()-1; i >= 0; i--) {
-        if(ret[i] != undefined) continue;
+        if(ret[i].n != undefined) continue;
         name[vec[i]] = (int)name.size()-1;
     }
     
@@ -137,27 +142,27 @@ vector<int> de_bruijn(vector<string> vec) {
                 }
                 blacket_type.pop();
             }
-            if(ret[i] == undefined) {
-                ret[i] = name[vec[i]]+cnt;
+            if(ret[i].n == undefined) {
+                ret[i] = (CELL){name[vec[i]]+cnt, vec[i]};
             }
         }
     }
     return ret;
 }
 
-vector<int> reduct(vector<int> pre) {
-    vector<int> nxt;
+vector<CELL> reduct(vector<CELL> pre) {
+    vector<CELL> nxt;
     while(true) {
         bool end = true;
         nxt.clear();
         for(int i = 0; i < (int)pre.size(); i++) {
-            if(pre[i] != -1) continue;
+            if(pre[i].n != -1) continue;
             int cnt = 0;
             int en = (int)pre.size()-1;
             for(int j = i+1; j < (int)pre.size(); j++) {
-                if(pre[j] == -2) {
+                if(pre[j].n == -2) {
                     cnt++;
-                } else if(pre[j] == -3){
+                } else if(pre[j].n == -3){
                     cnt--;
                     if(cnt == -1) {
                         en = j;
@@ -167,16 +172,16 @@ vector<int> reduct(vector<int> pre) {
             }
             if(en == (int)pre.size()-1) continue;
             
-            vector<int> item;
-            if(pre[en+1] >= 0) {
+            vector<CELL> item;
+            if(pre[en+1].n >= 0) {
                 item.push_back(pre[en+1]);
-            } else if(pre[en+1] == -2) {
+            } else if(pre[en+1].n == -2) {
                 cnt = 0;
                 item.push_back(pre[en+1]);
                 for(int j = en+2; j < (int)pre.size(); j++) {
-                    if(pre[j] == -2) {
+                    if(pre[j].n == -2) {
                         cnt++;
-                    } else if(pre[j] == -3) {
+                    } else if(pre[j].n == -3) {
                         cnt--;
                     }
                     item.push_back(pre[j]);
@@ -193,30 +198,30 @@ vector<int> reduct(vector<int> pre) {
             cnt = 0;
             
             for(int j = i+1; j < en; j++) {
-                if(pre[j] == -2) {
-                    if(pre[j+1] == -1) {
+                if(pre[j].n == -2) {
+                    if(pre[j+1].n == -1) {
                         bracket_type.push(true);
                         cnt++;
                     } else {
                         bracket_type.push(false);
                     }
                 }
-                if(pre[j] == -3) {
+                if(pre[j].n == -3) {
                     if(bracket_type.top() == true) {
                         cnt--;
                     }
                     bracket_type.pop();
                 }
-                if(pre[j] < 0) {
+                if(pre[j].n < 0) {
                     nxt.push_back(pre[j]);
-                } else if(pre[j] < cnt) {
+                } else if(pre[j].n < cnt) {
                     nxt.push_back(pre[j]);
-                } else if(pre[j] > cnt) {
-                    nxt.push_back(pre[j]-1);
+                } else if(pre[j].n > cnt) {
+                    nxt.push_back((CELL){pre[j].n-1, pre[j].str});
                 } else {
                     for(int k = 0; k < (int)item.size(); k++) {
-                        if(item[k] >= 0) {
-                            nxt.push_back(item[k]+cnt);
+                        if(item[k].n >= 0) {
+                            nxt.push_back((CELL){item[k].n+cnt, item[k].str});
                         } else {
                             nxt.push_back(item[k]);
                         }
@@ -235,30 +240,69 @@ vector<int> reduct(vector<int> pre) {
     return pre;
 }
 
+string vec2str(vector<CELL> vec) {
+    string ret;
+    if(vec[0].str == "(" && vec[(int)vec.size()-1].str == ")") {
+        int cnt = 0;
+        bool ok = true;
+        for(int i = 1; i < (int)vec.size()-1; i++) {
+            if(vec[i].str == "(") {
+                cnt++;
+            } else if(vec[i].str == ")") {
+                cnt--;
+            }
+            if(cnt == -1) {
+                ok = false;
+                break;
+            }
+        }
+        if(ok) {
+            vec.pop_back();
+            vec.erase(vec.begin());
+        }
+    }
+    
+    for(int i = 0; i < (int)vec.size(); i++) {
+        ret += vec[i].str;
+        if(vec[i].str != "(" && i != (int)vec.size()-1 && vec[i+1].str != ")") {
+            ret += " ";
+        }
+    }
+    return ret;
+}
+
 string beta_reduction(string input) {
     input = add_bracket(input);
-    cout << "add_bracket : " << input << endl;
+    //cout << "add_bracket : " << input << endl;
     
     vector<string> formula = str2vec(input);
+    /*
     cout << "str2vec : ";
     for(int i = 0; i < (int)formula.size(); i++) {
         cout << "\"" << formula[i] << "\" ";
     }
     cout << endl;
+    */
     
-    vector<int> bruijn_formula = de_bruijn(formula);
+    vector<CELL> bruijn_formula = de_bruijn(formula);
+    /*
     cout << "bruijn_formula : ";
     for(int i = 0; i < (int)bruijn_formula.size(); i++) {
-        cout << bruijn_formula[i] << " ";
+        cout << bruijn_formula[i].n << " ";
     }
     cout << endl;
+    */
     
-    vector<int> reducted_formula = reduct(bruijn_formula);
+    vector<CELL> reducted_formula = reduct(bruijn_formula);
+    /*
     cout << "reducted_formula : ";
     for(int i = 0; i < (int)reducted_formula.size(); i++) {
-        cout << reducted_formula[i] << " ";
+        cout << reducted_formula[i].n << " ";
     }
     cout << endl;
+    */
     
-    return "";
+    string ret = vec2str(reducted_formula);
+    
+    return ret;
 }
