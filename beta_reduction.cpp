@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include <stack>
 using namespace std;
 
@@ -10,6 +11,72 @@ struct CELL {
     string str;
     int dup;
 };
+
+string vec2str(vector<CELL> vec) {
+    string ret;
+    if(vec[0].str == "(" && vec[(int)vec.size()-1].str == ")") {
+        int cnt = 0;
+        bool ok = true;
+        for(int i = 1; i < (int)vec.size()-1; i++) {
+            if(vec[i].str == "(") {
+                cnt++;
+            } else if(vec[i].str == ")") {
+                cnt--;
+            }
+            if(cnt == -1) {
+                ok = false;
+                break;
+            }
+        }
+        if(ok) {
+            vec.pop_back();
+            vec.erase(vec.begin());
+        }
+    }
+    
+    map<string, set<int>> dup_map;
+    
+    dup_map["("].insert(0);
+    dup_map[")"].insert(0);
+    
+    for(int i = 0; i < (int)vec.size(); i++) {
+        if(vec[i].str == "(" || vec[i].str == ")") {
+            continue;
+        }
+        if(vec[i].str[0] == '\\') {
+            dup_map[vec[i].str.substr(1)].insert(vec[i].dup);
+        } else {
+            dup_map[vec[i].str].insert(vec[i].dup);
+        }
+    }
+    
+    for(int i = 0; i < (int)vec.size(); i++) {
+        ret += vec[i].str;
+        if(vec[i].str[0] == '\\') {
+            string tmp = vec[i].str.substr(1);
+            auto dup = dup_map[tmp].find(vec[i].dup);
+            for( ; ; dup--) {
+                if(dup == dup_map[tmp].begin()) {
+                    break;
+                }
+                ret += "'";
+            }
+        } else {
+            auto dup = dup_map[vec[i].str].find(vec[i].dup);
+            for( ; ; dup--) {
+                if(dup == dup_map[vec[i].str].begin()) {
+                    break;
+                }
+                ret += "'";
+            }
+        }
+        if(vec[i].str != "(" && i != (int)vec.size()-1 && vec[i+1].str != ")") {
+            ret += " ";
+        }
+    }
+    return ret;
+}
+
 
 string add_bracket(string str) {
     while(true) {
@@ -153,9 +220,34 @@ vector<CELL> de_bruijn(vector<string> vec) {
     return ret;
 }
 
+vector<CELL> delete_bracket(vector<CELL> vec) {
+    while(true) {
+        bool end = true;
+        for(int i = 0; i < (int)vec.size(); i++) {
+            if(vec[i].str != "(") continue;
+            if(vec[i+1].str == ")") {
+                end = false;
+                vec.erase(vec.begin()+i, vec.begin()+i+2);
+                break;
+            }
+            if(vec[i+2].str == ")") {
+                end = false;
+                vec.erase(vec.begin()+i);
+                vec.erase(vec.begin()+i+2);
+                break;
+            }
+        }
+        if(end) {
+            break;
+        }
+    }
+    return vec;
+}
+
 vector<CELL> reduct(vector<CELL> pre) {
     vector<CELL> nxt;
     while(true) {
+        cout << " -> " << vec2str(pre) << endl;
         bool end = true;
         nxt.clear();
         for(int i = 0; i < (int)pre.size(); i++) {
@@ -215,15 +307,29 @@ vector<CELL> reduct(vector<CELL> pre) {
                     }
                     bracket_type.pop();
                 }
-                if(pre[j].n < 0) {
-                    nxt.push_back(pre[j]);
-                } else if(pre[j].n < cnt) {
+                if(pre[j].n < cnt) {
                     nxt.push_back(pre[j]);
                 } else if(pre[j].n > cnt) {
                     nxt.push_back((CELL){pre[j].n-1, pre[j].str, pre[j].dup});
                 } else {
+                    stack<bool> item_bracket_type;
+                    int item_cnt = 0;
                     for(int k = 0; k < (int)item.size(); k++) {
-                        if(item[k].n >= 0) {
+                        if(item[k].n == -2) {
+                            if(item[k+1].n == -1) {
+                                item_bracket_type.push(true);
+                                item_cnt++;
+                            } else {
+                                item_bracket_type.push(false);
+                            }
+                        }
+                        if(item[k].n == -3) {
+                            if(item_bracket_type.top() == true) {
+                                item_cnt--;
+                            }
+                            item_bracket_type.pop();
+                        }
+                        if(item_cnt <= item[k].n) {
                             nxt.push_back((CELL){item[k].n+cnt, item[k].str, item[k].dup});
                         } else {
                             nxt.push_back(item[k]);
@@ -238,43 +344,10 @@ vector<CELL> reduct(vector<CELL> pre) {
             break;
         }
         if(end) break;
+        nxt = delete_bracket(nxt);
         pre = nxt;
     }
     return pre;
-}
-
-string vec2str(vector<CELL> vec) {
-    string ret;
-    if(vec[0].str == "(" && vec[(int)vec.size()-1].str == ")") {
-        int cnt = 0;
-        bool ok = true;
-        for(int i = 1; i < (int)vec.size()-1; i++) {
-            if(vec[i].str == "(") {
-                cnt++;
-            } else if(vec[i].str == ")") {
-                cnt--;
-            }
-            if(cnt == -1) {
-                ok = false;
-                break;
-            }
-        }
-        if(ok) {
-            vec.pop_back();
-            vec.erase(vec.begin());
-        }
-    }
-    
-    for(int i = 0; i < (int)vec.size(); i++) {
-        ret += vec[i].str;
-        for(int j = 0; j < vec[i].dup; j++) {
-            ret += "'";
-        }
-        if(vec[i].str != "(" && i != (int)vec.size()-1 && vec[i+1].str != ")") {
-            ret += " ";
-        }
-    }
-    return ret;
 }
 
 string beta_reduction(string input) {
@@ -310,5 +383,5 @@ string beta_reduction(string input) {
     
     string ret = vec2str(reducted_formula);
     
-    return ret;
+    return "";
 }
