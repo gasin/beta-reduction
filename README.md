@@ -1,2 +1,2 @@
 # beta-reduction
-inplement with C++
+inplement beta-reduction with C++
