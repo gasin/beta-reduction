@@ -21,3 +21,6 @@ $ (\f f y x) (\x \y x)
 ``` shell
 $ (\f \x f (f x)) (\x x)
 ```
+
+## Demo
+![result](https://github.com/gasin/beta-reduction/tree/media/demo.gif)
