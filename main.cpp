@@ -1,8 +1,10 @@
 #include <iostream>
 #include <string>
+#include <vector>
 using namespace std;
 
-string beta_reduction(string formula);
+vector<string> beta_reduction(string formula);
+bool check_syntax(string input);
 
 int main() {
     cout << "type 'q' to exit" << endl;
@@ -15,7 +17,13 @@ int main() {
             break;
         }
         
-        string output = beta_reduction(input);
-        //cout << output << endl;
+        if(check_syntax(input) == false) {
+            continue;
+        }
+        
+        vector<string> output = beta_reduction(input);
+        for(int i = 0; i < (int)output.size(); i++) {
+            cout << " -> " << output[i] << endl;
+        }
     }
 }

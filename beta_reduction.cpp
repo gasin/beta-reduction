@@ -244,10 +244,16 @@ vector<CELL> delete_bracket(vector<CELL> vec) {
     return vec;
 }
 
-vector<CELL> reduct(vector<CELL> pre) {
+vector<string> reduct(vector<CELL> pre) {
+    vector<string> ret;
     vector<CELL> nxt;
     while(true) {
-        cout << " -> " << vec2str(pre) << endl;
+        ret.push_back(vec2str(pre));
+        if((int)ret.size() >= 1000 || (int)ret[(int)ret.size()-1].size() >= 1000) {
+            ret.clear();
+            ret.push_back("can't reduct");
+            return ret;
+        } 
         bool end = true;
         nxt.clear();
         for(int i = 0; i < (int)pre.size(); i++) {
@@ -347,10 +353,10 @@ vector<CELL> reduct(vector<CELL> pre) {
         nxt = delete_bracket(nxt);
         pre = nxt;
     }
-    return pre;
+    return ret;
 }
 
-string beta_reduction(string input) {
+vector<string> beta_reduction(string input) {
     input = add_bracket(input);
     //cout << "add_bracket : " << input << endl;
     
@@ -372,16 +378,7 @@ string beta_reduction(string input) {
     cout << endl;
     */
     
-    vector<CELL> reducted_formula = reduct(bruijn_formula);
-    /*
-    cout << "reducted_formula : ";
-    for(int i = 0; i < (int)reducted_formula.size(); i++) {
-        cout << reducted_formula[i].n << " ";
-    }
-    cout << endl;
-    */
-    
-    string ret = vec2str(reducted_formula);
+    vector<string> ret = reduct(bruijn_formula);
     
     return ret;
 }
