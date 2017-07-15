@@ -3,6 +3,7 @@ inplement beta-reduction with C++
 
 ## Description
 Leftmost strategy and de-bruijn index are used.
+To compute a beta normal form, lazy evaluation is not used.
 
 ## Compile
 ``` shell
