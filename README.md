@@ -23,4 +23,4 @@ $ (\f \x f (f x)) (\x x)
 ```
 
 ## Demo
-![result](https://github.com/gasin/beta-reduction/tree/media/demo.gif)
+![result](https://github.com/gasin/beta-reduction/brob/media/demo.gif)
