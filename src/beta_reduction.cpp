@@ -16,24 +16,29 @@ struct CELL {
 
 string vec2str(vector<CELL> vec) {
     string ret;
-    if(vec[0].str == "(" && vec[(int)vec.size()-1].str == ")") {
-        int cnt = 0;
-        bool ok = true;
-        for(int i = 1; i < (int)vec.size()-1; i++) {
-            if(vec[i].str == "(") {
-                cnt++;
-            } else if(vec[i].str == ")") {
-                cnt--;
+    while(true) {
+        bool end = true;
+        if(vec[0].str == "(" && vec[(int)vec.size()-1].str == ")") {
+            int cnt = 0;
+            bool ok = true;
+            for(int i = 1; i < (int)vec.size()-1; i++) {
+                if(vec[i].str == "(") {
+                    cnt++;
+                } else if(vec[i].str == ")") {
+                    cnt--;
+                }
+                if(cnt == -1) {
+                    ok = false;
+                    break;
+                }
             }
-            if(cnt == -1) {
-                ok = false;
-                break;
+            if(ok) {
+                vec.pop_back();
+                vec.erase(vec.begin());
+                end = false;
             }
         }
-        if(ok) {
-            vec.pop_back();
-            vec.erase(vec.begin());
-        }
+        if(end) break;
     }
     
     map<string, set<int>> dup_map;
