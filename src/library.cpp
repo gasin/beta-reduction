@@ -17,6 +17,9 @@ public:
         reserved_map["Pair"] = "(\\f (\\s (\\b b f s)))";
         reserved_map["First"] = "(\\p p True)";
         reserved_map["Second"] = "(\\p p False)";
+        reserved_map["And"] = "(\\b (\\c b c False))";
+        reserved_map["Or"] = "(\\b (\\c b True c))";
+        reserved_map["Not"] = "(\\b b False True)";
     }
     bool exist(string str) {
         if(reserved_map.count(str)) {
