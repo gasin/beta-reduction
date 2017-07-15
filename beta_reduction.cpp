@@ -6,6 +6,8 @@
 #include <stack>
 using namespace std;
 
+bool check_lambda(vector<string> vec);
+
 struct CELL {
     int n;
     string str;
@@ -232,8 +234,8 @@ vector<CELL> delete_bracket(vector<CELL> vec) {
             }
             if(vec[i+2].str == ")") {
                 end = false;
-                vec.erase(vec.begin()+i);
                 vec.erase(vec.begin()+i+2);
+                vec.erase(vec.begin()+i);
                 break;
             }
         }
@@ -368,6 +370,10 @@ vector<string> beta_reduction(string input) {
     }
     cout << endl;
     */
+    if(check_lambda(formula) == false) {
+        vector<string> ret;
+        return ret;
+    }
     
     vector<CELL> bruijn_formula = de_bruijn(formula);
     /*
