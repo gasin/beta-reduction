@@ -249,6 +249,31 @@ vector<CELL> delete_bracket(vector<CELL> vec) {
             break;
         }
     }
+    while(true) {
+        bool end = true;
+        for(int i = 1; i < (int)vec.size(); i++) {
+            if(vec[i].str != "(" || vec[i-1].str != "(") continue;
+            int cnt = 0;
+            for(int j = i+1; j < (int)vec.size(); j++) {
+                if(vec[j].str == "(") {
+                    cnt++;
+                } else if(vec[j].str == ")") {
+                    cnt--;
+                    if(cnt == -1) {
+                        if(vec[j+1].str == ")") {
+                            vec.erase(vec.begin()+j+1);
+                            vec.erase(vec.begin()+i);
+                            end = false;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        if(end) {
+            break;
+        }
+    }
     return vec;
 }
 
@@ -262,6 +287,8 @@ vector<string> reduct(vector<CELL> pre) {
             ret.push_back("can't reduct");
             return ret;
         } 
+        pre = delete_bracket(pre);
+        
         bool end = true;
         nxt.clear();
         for(int i = 0; i < (int)pre.size(); i++) {
@@ -358,7 +385,6 @@ vector<string> reduct(vector<CELL> pre) {
             break;
         }
         if(end) break;
-        nxt = delete_bracket(nxt);
         pre = nxt;
     }
     return ret;
