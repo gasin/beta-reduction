@@ -7,6 +7,7 @@
 using namespace std;
 
 bool check_lambda(vector<string> vec);
+bool decompose_reserved_words(vector<string> &vec);
 
 struct CELL {
     int n;
@@ -376,6 +377,11 @@ vector<string> beta_reduction(string input) {
     cout << endl;
     */
     if(check_lambda(formula) == false) {
+        vector<string> ret;
+        return ret;
+    }
+    
+    if(decompose_reserved_words(formula) == false) {
         vector<string> ret;
         return ret;
     }
