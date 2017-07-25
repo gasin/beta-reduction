@@ -24,3 +24,6 @@ $ (\f \x f (f x)) (\x x)
 
 ## Demo
 ![result](https://github.com/gasin/beta-reduction/blob/media/demo.gif)
+
+## References
+「型システム入門」 Benjamin C. Pierce
